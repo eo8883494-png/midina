@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
 <style>
-:root { --bg:#0B0B0F; --card:#15151C; --accent:#E8FF47; --text:#F2F2F5; --sub:#9A9AA5; }
+:root { --bg:#0B0B0F; --card:#15151C; --accent:#E8FF47; --text:#F2F2F5; --sub:#9A9AA5; --pulse:0; }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:var(--bg); color:var(--text); font-family:"Segoe UI",-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif; line-height:1.6; }
 .wrap { max-width:640px; margin:0 auto; padding:48px 20px 80px; }
@@ -38,35 +38,118 @@ audio { width:100%; height:36px; }
 .cta b { color:var(--accent); }
 footer { margin-top:56px; text-align:center; color:var(--sub); font-size:.78rem; }
 footer .ai { display:inline-block; border:1px solid #2A2A35; border-radius:999px; padding:4px 14px; margin-bottom:10px; }
+.num, .pbtn, .l2, #viz, .np, .ticker { display:none; }
+
+/* ===== Desktop editorial layout (mobile stays untouched below 900px) ===== */
+@media (min-width:900px) {
+  .wrap { max-width:1200px; display:grid; grid-template-columns:minmax(380px,44%) minmax(0,1fr); gap:72px; align-items:start; padding:0 40px; }
+  .hero { position:sticky; top:0; min-height:100vh; text-align:left; margin:0; display:flex; flex-direction:column; justify-content:center; gap:18px; }
+  .hero > * { position:relative; z-index:1; }
+  #viz { display:block; position:absolute; inset:0; z-index:0; width:100%; height:100%; }
+  .hero img { width:96px; height:96px; border-radius:22px;
+    box-shadow:0 8px 40px rgba(232,255,71,calc(.12 + var(--pulse)*.25)); }
+  h1 { margin-top:0; letter-spacing:-0.03em; line-height:.92;
+    text-shadow:0 0 calc(12px + var(--pulse)*40px) rgba(232,255,71,calc(.10 + var(--pulse)*.35)); }
+  .l1, .l2 { display:block; font-size:clamp(64px,7vw,120px); font-weight:900; }
+  .l2 { color:rgba(232,255,71,.25); }
+  @supports (-webkit-text-stroke:1px #000) {
+    .l2 { color:transparent; -webkit-text-stroke:2px var(--accent); }
+  }
+  .np { display:flex; gap:14px; align-items:baseline; margin-top:8px; }
+  .np-l { color:var(--accent); font-size:.7rem; letter-spacing:.35em; font-weight:700; }
+  .np-t { font-size:1.05rem; letter-spacing:.06em; }
+  .right h2 { margin-top:64px; font-size:.9rem; }
+  .song { background:none; border-radius:0; margin:0; padding:30px 8px;
+    border-top:1px solid rgba(232,255,71,.18);
+    display:grid; grid-template-columns:4.5rem 1fr auto 64px; align-items:center; gap:16px;
+    cursor:pointer;
+    background:linear-gradient(90deg, rgba(232,255,71,.13) calc(var(--p,0)*1%), transparent 0); }
+  .song:last-of-type { border-bottom:1px solid rgba(232,255,71,.18); }
+  .song .row { display:contents; }
+  .song b { font-size:clamp(1.6rem,2.4vw,2.5rem); font-weight:800; letter-spacing:.02em;
+    transition:transform .25s ease-out; display:inline-block; white-space:nowrap; }
+  .song i { font-size:.8rem; letter-spacing:.08em; white-space:nowrap; }
+  .num { display:block; color:var(--sub); font-size:.85rem; letter-spacing:.1em; }
+  .eq { display:none; }
+  .playing .n { display:none; }
+  .playing .eq { display:flex; gap:3px; align-items:flex-end; height:16px; }
+  .eq i { width:3px; background:var(--accent); animation:eq .5s ease-in-out infinite alternate; }
+  .eq i:nth-child(2) { animation-delay:.15s; }
+  .eq i:nth-child(3) { animation-delay:.3s; }
+  .playing.paused .eq i { animation-play-state:paused; }
+  @keyframes eq { from { height:4px; } to { height:16px; } }
+  .pbtn { display:grid; place-items:center; width:52px; height:52px; border-radius:50%;
+    border:1px solid rgba(232,255,71,.5); background:none; cursor:pointer;
+    transition:border-color .2s ease-out; }
+  .pbtn::before { content:''; display:block; width:0; height:0; margin-left:4px;
+    border-left:15px solid var(--accent); border-top:9px solid transparent; border-bottom:9px solid transparent; }
+  .playing:not(.paused) .pbtn::before { width:5px; height:18px; margin-left:0;
+    border:none; background:var(--accent); box-shadow:9px 0 0 var(--accent); }
+  .song audio { display:none; }
+  @media (hover:hover) {
+    .song:not(.playing):hover { background:var(--accent); }
+    .song:not(.playing):hover b, .song:not(.playing):hover .num { color:var(--bg); }
+    .song:not(.playing):hover i { color:rgba(11,11,15,.7); }
+    .song:not(.playing):hover .pbtn { border-color:rgba(11,11,15,.6); }
+    .song:not(.playing):hover .pbtn::before { border-left-color:var(--bg); }
+    .song:hover b { transform:translateX(10px); }
+  }
+  .song.playing { border-top-color:rgba(232,255,71,.6); }
+  .right .cta { border:1px solid rgba(232,255,71,.3); }
+}
+
+/* ===== Wide: page frame + bottom ticker ===== */
+@media (min-width:1400px) {
+  .wrap { max-width:1560px; }
+  body::before { content:''; position:fixed; inset:20px 20px 88px;
+    border:1px solid rgba(232,255,71,.14); pointer-events:none; }
+  .ticker { display:block; position:fixed; left:0; right:0; bottom:0;
+    overflow:hidden; white-space:nowrap; padding:10px 0; }
+  .ticker span { display:inline-block; font-size:clamp(28px,2.2vw,40px); font-weight:800;
+    color:transparent; -webkit-text-stroke:1px rgba(232,255,71,.3);
+    animation:mq 40s linear infinite; will-change:transform; }
+  .ticker:hover span { animation-play-state:paused; }
+  body.playing .ticker span { -webkit-text-stroke-color:rgba(232,255,71,.45); animation-duration:22s; }
+  @keyframes mq { to { transform:translateX(-50%); } }
+  .right { padding-bottom:96px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker span, .eq i { animation:none; }
+  .song b { transition:none; }
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <div class="hero">
+  <canvas id="viz" aria-hidden="true"></canvas>
   <img src="assets/icon.png" alt="MIDINA icon">
-  <h1>MIDINA</h1>
+  <h1><span class="l1">MIDINA</span><span class="l2" aria-hidden="true">MIDINA</span></h1>
   <div class="tag">A I &nbsp; A R T I S T</div>
   <p class="lead">100% AI-made English dance pop.<br>AIが作って、AIが歌う。踊るのはあなた。</p>
   <div class="sns">
     <a class="tt" href="https://www.tiktok.com/@midina.wav" target="_blank" rel="noopener">TikTok @midina.wav</a>
     <a class="ig" href="https://www.instagram.com/midina.wav/" target="_blank" rel="noopener">Instagram @midina.wav</a>
   </div>
+  <div class="np" aria-live="polite"><span class="np-l">NOW PLAYING</span><b class="np-t">PRESS PLAY</b></div>
 </div>
 
+<div class="right">
 <h2>SONGS</h2>
 <p class="note">全曲15秒プレビュー / 15-sec previews</p>
 
-<div class="song"><div class="row"><b>GRAVITY</b><i>dance pop · 125 BPM</i></div><audio controls preload="none" src="audio/gravity.mp3"></audio></div>
-<div class="song"><div class="row"><b>RUN IT BACK</b><i>Jersey club · 140 BPM</i></div><audio controls preload="none" src="audio/runitback.mp3"></audio></div>
-<div class="song"><div class="row"><b>FEVER</b><i>dance pop · 124 BPM</i></div><audio controls preload="none" src="audio/fever.mp3"></audio></div>
-<div class="song"><div class="row"><b>OVERDRIVE</b><i>Jersey club · 140 BPM</i></div><audio controls preload="none" src="audio/overdrive.mp3"></audio></div>
-<div class="song"><div class="row"><b>WAVES</b><i>house pop · 128 BPM</i></div><audio controls preload="none" src="audio/waves.mp3"></audio></div>
-<div class="song"><div class="row"><b>POISON</b><i>dance pop · 126 BPM</i></div><audio controls preload="none" src="audio/poison.mp3"></audio></div>
-<div class="song"><div class="row"><b>BOUNCE</b><i>Jersey club · 140 BPM</i></div><audio controls preload="none" src="audio/bounce.mp3"></audio></div>
-<div class="song"><div class="row"><b>AFTERGLOW</b><i>house pop · 126 BPM</i></div><audio controls preload="none" src="audio/afterglow.mp3"></audio></div>
-<div class="song"><div class="row"><b>USED TO THIS</b><i>UK garage · 133 BPM</i></div><audio controls preload="none" src="audio/usedtothis.mp3"></audio></div>
-<div class="song"><div class="row"><b>SIREN</b><i>dance pop · 125 BPM</i></div><audio controls preload="none" src="audio/siren.mp3"></audio></div>
+<div class="song" data-title="GRAVITY"><span class="num"><span class="n">01</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>GRAVITY</b><i>dance pop · 125 BPM</i></div><button class="pbtn" aria-label="Play GRAVITY"></button><audio controls preload="none" src="audio/gravity.mp3"></audio></div>
+<div class="song" data-title="RUN IT BACK"><span class="num"><span class="n">02</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>RUN IT BACK</b><i>Jersey club · 140 BPM</i></div><button class="pbtn" aria-label="Play RUN IT BACK"></button><audio controls preload="none" src="audio/runitback.mp3"></audio></div>
+<div class="song" data-title="FEVER"><span class="num"><span class="n">03</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>FEVER</b><i>dance pop · 124 BPM</i></div><button class="pbtn" aria-label="Play FEVER"></button><audio controls preload="none" src="audio/fever.mp3"></audio></div>
+<div class="song" data-title="OVERDRIVE"><span class="num"><span class="n">04</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>OVERDRIVE</b><i>Jersey club · 140 BPM</i></div><button class="pbtn" aria-label="Play OVERDRIVE"></button><audio controls preload="none" src="audio/overdrive.mp3"></audio></div>
+<div class="song" data-title="WAVES"><span class="num"><span class="n">05</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>WAVES</b><i>house pop · 128 BPM</i></div><button class="pbtn" aria-label="Play WAVES"></button><audio controls preload="none" src="audio/waves.mp3"></audio></div>
+<div class="song" data-title="POISON"><span class="num"><span class="n">06</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>POISON</b><i>dance pop · 126 BPM</i></div><button class="pbtn" aria-label="Play POISON"></button><audio controls preload="none" src="audio/poison.mp3"></audio></div>
+<div class="song" data-title="BOUNCE"><span class="num"><span class="n">07</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>BOUNCE</b><i>Jersey club · 140 BPM</i></div><button class="pbtn" aria-label="Play BOUNCE"></button><audio controls preload="none" src="audio/bounce.mp3"></audio></div>
+<div class="song" data-title="AFTERGLOW"><span class="num"><span class="n">08</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>AFTERGLOW</b><i>house pop · 126 BPM</i></div><button class="pbtn" aria-label="Play AFTERGLOW"></button><audio controls preload="none" src="audio/afterglow.mp3"></audio></div>
+<div class="song" data-title="USED TO THIS"><span class="num"><span class="n">09</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>USED TO THIS</b><i>UK garage · 133 BPM</i></div><button class="pbtn" aria-label="Play USED TO THIS"></button><audio controls preload="none" src="audio/usedtothis.mp3"></audio></div>
+<div class="song" data-title="SIREN"><span class="num"><span class="n">10</span><span class="eq"><i></i><i></i><i></i></span></span><div class="row"><b>SIREN</b><i>dance pop · 125 BPM</i></div><button class="pbtn" aria-label="Play SIREN"></button><audio controls preload="none" src="audio/siren.mp3"></audio></div>
 
 <div class="cta">
   <p><b>Use my sounds. Tag #MIDINA.</b><br>
@@ -78,14 +161,154 @@ footer .ai { display:inline-block; border:1px solid #2A2A35; border-radius:999px
   <div class="ai">🤖 All music &amp; vocals are AI-generated / 楽曲・歌声はすべてAI生成です</div><br>
   © 2026 MIDINA
 </footer>
+</div>
 
 </div>
+<div class="ticker" aria-hidden="true"><span></span></div>
 <script>
-document.querySelectorAll("audio").forEach(a => {
-  a.addEventListener("play", () => {
-    document.querySelectorAll("audio").forEach(b => { if (b !== a) b.pause(); });
+(() => {
+  const TICKER_BASE = "MIDINA ✦ 100% AI-MADE DANCE POP ✦ 124–140 BPM ✦ USE MY SOUNDS · TAG #MIDINA ✦ ";
+  const desk = () => matchMedia("(min-width:900px)").matches;
+  const rm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const audios = [...document.querySelectorAll("audio")];
+  const npT = document.querySelector(".np-t");
+  const tickerSpan = document.querySelector(".ticker span");
+  const setTicker = (text) => { if (tickerSpan) tickerSpan.textContent = text + text; };
+  setTicker(TICKER_BASE);
+
+  // --- player state sync: driven by audio events, not clicks ---
+  let current = null;
+  audios.forEach(a => {
+    const song = a.closest(".song");
+    a.addEventListener("play", () => {
+      audios.forEach(b => { if (b !== a) b.pause(); });
+      document.querySelectorAll(".song.playing").forEach(s => {
+        if (s !== song) { s.classList.remove("playing", "paused"); s.style.setProperty("--p", 0); }
+      });
+      song.classList.add("playing");
+      song.classList.remove("paused");
+      document.body.classList.add("playing");
+      current = a;
+      if (npT) npT.textContent = song.dataset.title;
+      const genre = song.querySelector("i");
+      setTicker("NOW PLAYING — " + song.dataset.title + " — " + (genre ? genre.textContent : "") + " — ");
+      startViz();
+    });
+    a.addEventListener("pause", () => { song.classList.add("paused"); });
+    a.addEventListener("ended", () => {
+      song.classList.remove("playing", "paused");
+      song.style.setProperty("--p", 0);
+      document.body.classList.remove("playing");
+      current = null;
+      if (npT) npT.textContent = "PRESS PLAY";
+      setTicker(TICKER_BASE);
+    });
   });
-});
+
+  // --- desktop click delegation (mobile keeps native controls) ---
+  let ctx = null, analyser = null, freq = null;
+  const sources = new WeakMap();
+  const hook = (a) => {
+    if (sources.has(a)) return;
+    sources.set(a, true);
+    const src = ctx.createMediaElementSource(a);
+    src.connect(analyser);
+  };
+  document.querySelector(".right").addEventListener("click", (e) => {
+    if (!desk()) return;
+    const song = e.target.closest(".song");
+    if (!song) return;
+    const a = song.querySelector("audio");
+    const onBtn = !!e.target.closest(".pbtn");
+    if (!ctx && !rm && "AudioContext" in window) {
+      ctx = new AudioContext();
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.85;
+      analyser.connect(ctx.destination);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+    }
+    if (ctx) { hook(a); ctx.resume(); }
+    if (onBtn || !song.classList.contains("playing")) {
+      if (a.paused) a.play().catch(() => {}); else a.pause();
+    } else {
+      const rect = song.getBoundingClientRect();
+      const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      if (Number.isFinite(a.duration)) {
+        a.currentTime = ratio * a.duration;
+        if (a.paused) a.play().catch(() => {});
+      }
+    }
+  });
+
+  // --- bfcache restore: re-sync UI to actual audio state ---
+  addEventListener("pageshow", (e) => {
+    if (!e.persisted) return;
+    audios.forEach(a => {
+      const song = a.closest(".song");
+      if (a.paused) { song.classList.remove("playing"); }
+    });
+    if (audios.every(a => a.paused)) {
+      document.body.classList.remove("playing");
+      if (npT) npT.textContent = "PRESS PLAY";
+      setTicker(TICKER_BASE);
+    }
+  });
+
+  // --- hero visualizer: idle sine wave, live bars while playing ---
+  const canvas = document.getElementById("viz");
+  const BARS = 48;
+  const heights = new Float32Array(BARS);
+  let raf = null;
+  function draw(now) {
+    raf = null;
+    if (document.hidden || !desk() || rm) return;
+    const dpr = Math.min(devicePixelRatio || 1, 1.5);
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== (w * dpr | 0)) { canvas.width = w * dpr; canvas.height = h * dpr; }
+    const g = canvas.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    let playing = current && !current.paused;
+    let pulse = 0;
+    for (let i = 0; i < BARS; i++) {
+      let target;
+      if (playing && analyser) {
+        analyser.getByteFrequencyData(freq);
+        const half = i < BARS / 2 ? BARS / 2 - 1 - i : i - BARS / 2;
+        target = (freq[half + 1] / 255) * h * 0.42;
+        let low = 0;
+        for (let k = 1; k <= 8; k++) low += freq[k];
+        pulse = low / (8 * 255);
+      } else {
+        target = 8 + 6 * Math.sin(now / 700 + i * 0.55) + 4 * Math.sin(now / 1300 + i * 1.7);
+      }
+      heights[i] += (target - heights[i]) * 0.18;
+    }
+    const grad = g.createLinearGradient(0, h, 0, 0);
+    grad.addColorStop(0, "rgba(232,255,71,.5)");
+    grad.addColorStop(1, "rgba(232,255,71,0)");
+    g.fillStyle = grad;
+    const bw = w / BARS * 0.45, gap = w / BARS;
+    const cy = h * 0.5;
+    for (let i = 0; i < BARS; i++) {
+      const bh = Math.max(2, heights[i]);
+      g.fillRect(i * gap + (gap - bw) / 2, cy - bh, bw, bh * 2);
+    }
+    const pv = Math.round(pulse * 100) / 100;
+    if (Math.abs(pv - (+document.documentElement.style.getPropertyValue("--pulse") || 0)) >= 0.01) {
+      document.documentElement.style.setProperty("--pulse", pv);
+    }
+    if (playing && Number.isFinite(current.duration)) {
+      current.closest(".song").style.setProperty("--p", current.currentTime / current.duration * 100);
+    }
+    raf = requestAnimationFrame(draw);
+  }
+  function startViz() { if (!raf && desk() && !rm && !document.hidden) raf = requestAnimationFrame(draw); }
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) startViz(); });
+  matchMedia("(min-width:900px)").addEventListener?.("change", startViz);
+  startViz();
+})();
 </script>
 </body>
 </html>
