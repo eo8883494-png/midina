@@ -13,6 +13,9 @@
 <meta name="color-scheme" content="dark">
 <link rel="icon" type="image/png" href="assets/icon.png">
 <link rel="apple-touch-icon" href="assets/icon.png">
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NR2S79YR5R"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-NR2S79YR5R');</script>
 <style>
 :root { --bg:#0B0B0F; --card:#15151C; --accent:#E8FF47; --text:#F2F2F5; --sub:#9A9AA5; --pulse:0; }
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -176,6 +179,13 @@ footer .ai { display:inline-block; border:1px solid #2A2A35; border-radius:999px
   const setTicker = (text) => { if (tickerSpan) tickerSpan.textContent = text + text; };
   setTicker(TICKER_BASE);
 
+  // --- GA: 試聴とSNSクリックを計測(gtagブロック時は無視) ---
+  const track = (name, params) => { try { if (typeof gtag === "function") gtag("event", name, params || {}); } catch (e) {} };
+  const trackedPlays = new Set();
+  document.querySelectorAll(".sns a").forEach(a => {
+    a.addEventListener("click", () => track(a.classList.contains("tt") ? "click_tiktok" : "click_instagram"));
+  });
+
   // --- player state sync: driven by audio events, not clicks ---
   let current = null;
   audios.forEach(a => {
@@ -189,6 +199,10 @@ footer .ai { display:inline-block; border:1px solid #2A2A35; border-radius:999px
       song.classList.remove("paused");
       document.body.classList.add("playing");
       current = a;
+      if (!trackedPlays.has(song.dataset.title)) {
+        trackedPlays.add(song.dataset.title);
+        track("play_preview", { song: song.dataset.title });
+      }
       if (npT) npT.textContent = song.dataset.title;
       const genre = song.querySelector(".row i");
       setTicker("NOW PLAYING — " + song.dataset.title + " — " + (genre ? genre.textContent : "") + " — ");
