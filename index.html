@@ -190,7 +190,7 @@ footer .ai { display:inline-block; border:1px solid #2A2A35; border-radius:999px
       document.body.classList.add("playing");
       current = a;
       if (npT) npT.textContent = song.dataset.title;
-      const genre = song.querySelector("i");
+      const genre = song.querySelector(".row i");
       setTicker("NOW PLAYING — " + song.dataset.title + " — " + (genre ? genre.textContent : "") + " — ");
       startViz();
     });
